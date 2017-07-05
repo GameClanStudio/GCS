@@ -1,2 +1,0 @@
-# GCS
-Desenvolvimento de Jogos
