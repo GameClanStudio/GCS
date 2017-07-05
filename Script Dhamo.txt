@@ -1,0 +1,149 @@
+//Script Dhamo:
+
+#pragma strict
+static var animador :  Animator;
+var rb : Rigidbody2D;
+var colisao : RaycastHit2D;
+var colisor : BoxCollider2D;
+var velocidade : float;
+var tempSemAtaque : float;
+var tempAtaque : float;
+var filhos : Transform[];
+var audioSoco : AudioSource;
+var texto : UI.Text;
+var inimigo : GameObject;
+var player : GameObject;
+var vidaTexto : UI.Text;
+static var count : int;
+var Impacto : GameObject;
+var PoteDeVida : GameObject;
+static var pontosCount : int;
+function Start () {
+	pontosCount = 0;
+	count = 10;
+	animador = GetComponent.<Animator>();
+	tempSemAtaque = 0;
+	tempAtaque =0;
+	colisor = GetComponent(BoxCollider2D);
+	rb = GetComponent.<Rigidbody2D>();
+	audioSoco = GetComponent.<AudioSource>();
+	texto.text = "";
+}
+
+function FixedUpdate () {
+//inimigo = GameObject.FindWithTag("Inimigo");
+player = GameObject.FindWithTag("Player");
+if(transform.position.y < -52)
+{
+Morte();
+}
+if(count <= 0)
+{
+Morte();
+}
+tempSemAtaque = tempSemAtaque + Time.deltaTime;
+if(Input.GetMouseButtonDown(0) && tempSemAtaque > 0.2)
+{
+animador.SetBool("Atacando",true);
+colisor.size.x = 13;
+colisor.offset.x = 2.5;
+Instantiate(Impacto,transform.position,transform.rotation);
+tempSemAtaque = 0;
+WaitForSeconds(2);
+Impacto.SetActive(false);
+}
+else{
+animador.SetBool("Atacando",false);
+colisor.size.x = 6.34;
+colisor.offset.x = 0;
+}
+if(!animador.GetBool("Atacando"))
+{
+
+  animador.SetBool("Chão",Colisao());
+
+  if(Colisao())
+  {
+	if (Input.GetKeyDown(KeyCode.Space))
+	{
+	animador.SetBool("Chão",false);
+	rb.AddForce(transform.up * 2650);
+	audioSoco.Play();
+	}
+	else Ataque();
+
+}
+Andar(Input.GetAxis("Horizontal"),Input.GetAxis("Horizontal")*40);
+}
+}
+function Colisao () : boolean
+{
+    colisao = Physics2D.Raycast(filhos[0].position,-transform.up,colisor.size.y/1.9);
+    if(colisao)
+    {
+    return(true);
+    }
+    else
+    {
+    colisao = Physics2D.Raycast(filhos[1].position,-transform.up,colisor.size.y/1.9);
+    if(colisao)
+    {
+    return(true);
+    }
+    else
+    {
+    return(false);
+    }
+}
+}
+
+function Andar(x : float, y : float)
+{
+if(x > 0)
+transform.rotation.eulerAngles.y = 0;
+if(x < 0)
+{
+transform.rotation.eulerAngles.y = 180;
+}
+
+rb.velocity.x = y;
+if(y != 0)
+animador.SetBool("SeMovendo",true);
+else
+animador.SetBool("SeMovendo",false);
+
+}
+function Ataque()
+{
+if(Input.GetMouseButtonDown(0) && tempSemAtaque > 0.2)
+{
+animador.SetBool("Atacando",true);
+colisor.size.x = 13;
+colisor.offset.x = 2.5;
+tempSemAtaque = 0;
+Instantiate(Impacto,transform.position,transform.rotation);
+WaitForSeconds(2);
+Impacto.SetActive(false);
+}
+}
+function Morte()
+{
+
+Time.timeScale = 0;
+print("Morreu OtARIO");
+
+Application.LoadLevel("Morreu");
+}
+
+
+
+function OnCollisionEnter2D(collision : Collision2D)
+{
+ if((collision.gameObject.tag == "Inimigo") && (animador.GetBool("Atacando") == false))
+
+ count = count - 1;
+ VidaTexto.vidaTexto.text = "Vida: " + count;
+
+}
+
+
